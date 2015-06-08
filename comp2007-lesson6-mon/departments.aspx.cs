@@ -28,7 +28,6 @@ namespace comp2007_lesson6_mon
             //connect using our connection string from web.config and EF context class
             using (DefaultConnection conn = new DefaultConnection())
             {
-
                 //use link to query the Departments model
                 var deps = from d in conn.Departments
                            select d;
@@ -36,6 +35,27 @@ namespace comp2007_lesson6_mon
                 //bind the query result to the gridview
                 grdDepartments.DataSource = deps.ToList();
                 grdDepartments.DataBind();
+            }
+        }
+
+        protected void grdDepartments_RowDeleting(object sender, GridViewDeleteEventArgs e)
+        {
+            //connect
+            using (DefaultConnection conn = new DefaultConnection())
+            {
+                //get the selected DepartmentID
+                Int32 DepartmentID = Convert.ToInt32(grdDepartments.DataKeys[e.RowIndex].Values["DepartmentID"]);
+
+                var d = (from dep in conn.Departments
+                         where dep.DepartmentID == DepartmentID
+                         select dep).FirstOrDefault();
+
+                //process the delete
+                conn.Departments.Remove(d);
+                conn.SaveChanges();
+
+                //update the grid
+                GetDepartments();
             }
         }
     }
